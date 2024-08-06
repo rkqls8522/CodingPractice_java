@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Stack;
 
 public class Solution {
-	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	static StringBuilder sb = new StringBuilder();
 	public static void main(String[] args) throws NumberFormatException, IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringBuilder sb = new StringBuilder();
 		int T = 10;
 		for (int t = 1; t <= T; t++) {
 			//배열을 만들어서 쓰는 것이 아니라 스택을 이용하는 것이라서 사실 지금은 size 안 쓰일 것.
