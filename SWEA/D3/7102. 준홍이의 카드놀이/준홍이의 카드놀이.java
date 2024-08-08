@@ -39,9 +39,6 @@ public class Solution {
 				if(arr[i] == maxCnt) resultSbValue.append(i).append(' ');
 			}
 			
-			//마지막 공백 제거
-			resultSbValue.deleteCharAt(resultSbValue.length()-1);
-			
 			sb.append('#').append(t).append(' ').append(resultSbValue).append('\n');
 		}
 		System.out.println(sb);
