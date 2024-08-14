@@ -2,6 +2,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -64,9 +65,34 @@ public class Solution {
 			
 			//출력할 문자열 만들기
 			sb.append("#").append(t);
-			for (int i = 0; i < 10; i++) { //10개만 출력
-				sb.append(" ").append(pwdList.get(i));
+			
+//			//get메소드 이용
+//			for (int i = 0; i < 10; i++) { //10개만 출력
+//				sb.append(" ").append(pwdList.get(i));
+//			}
+//			
+//			//Iterator는 앞으로만 갈 수 있음
+//			//Iterator의 next메소드 이용
+			Iterator<Integer> iter = pwdList.iterator();
+			//다음 원소가 없는데 next메소드를 쓰면 에러가 남
+			int cnt = 10; //10개만 꺼낼 것임
+			while(iter.hasNext() && cnt > 0) { //다음 원소가 있니?
+				sb.append(" ").append(iter.next()); //그럼 출력해라
+				cnt--;
 			}
+//			
+//			//Iterator의 단점을 보완한 ListIterator. 앞과 뒤로 갈 수 있음
+//			ListIterator<Integer> listIter = pwdList.listIterator();
+//			while(listIter.hasNext()) { //다음 원소가 있니?
+//				sb.append(" ").append(listIter.next()); //그럼 출력해라				
+//			}
+//			while(listIter.hasPrevious()) { //이전 원소가 있니?
+//				sb.append(" ").append(listIter.previous()); //그럼 출력해라
+//			}
+			
+			
+			
+			
 			sb.append("\n");
 		}
 		System.out.print(sb);
