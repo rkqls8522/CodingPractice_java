@@ -2,135 +2,130 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.StringTokenizer;
+import java.util.ArrayList;
 
 public class Solution {
-	static int N, maxCoreCnt, minWire, coreArrCnt;
-	static boolean[][] processor;
-	static int[][] coreArr;
-	static final int[][] delta = {{-1,0},{1,0},{0,-1},{0,1}};//상하좌우
+	static class Point{
+		int r;
+		int c;
+		
+		public Point(int r, int c) {
+			super();
+			this.r = r;
+			this.c = c;
+		}
+	}
+	
+	//전역변수로 쓸 것들 static으로 빼기
+	private static ArrayList<Point> coreList;
+	private static int N;
+	private static int[][] m;
+	private static int outLineCoreCnt;
+	private static int minWireSum;
+	private static int totalCoreCnt;
+	private static int maxCoreCnt;
+	private static final int[] dr = {-1,1,0,0};
+	private static final int[] dc = {0,0,-1,1};
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringBuilder sb = new StringBuilder();
-		StringTokenizer st;
 
 		int T = Integer.parseInt(br.readLine());
 		for (int t = 1; t <= T; t++) {
 			N = Integer.parseInt(br.readLine());
-			processor = new boolean[N][N];
-			coreArr = new int[12][2]; //최대 12개. 위치저장할 것.
-			coreArrCnt = 0;
-			minWire = Integer.MAX_VALUE; //최소 전선 길이의 합을 최댓값으로 초기화
-			maxCoreCnt = Integer.MIN_VALUE; //최대 연결 코어갯수를 최솟값으로 초기화
+			m = new int[N][N];
+			coreList = new ArrayList<>();
+			outLineCoreCnt = 0;
 			
-			//프로세서 배열채우기. 1인 곳만 true로.
 			for (int r = 0; r < N; r++) {
-				st = new StringTokenizer(br.readLine(), " ");
-				for (int c = 0; c < N; c++) {
-					int num = Integer.parseInt(st.nextToken());
-					if(num ==1) {
-						processor[r][c] = true;
-						//가장자리에 있는 거 아니면 추가하자~
-						if(r >0 && c>0 && r <N-1 && c <N-1) {
-							coreArr[coreArrCnt][0] = r;
-							coreArr[coreArrCnt][1] = c;
-							coreArrCnt++;
+				String s = br.readLine();
+				for (int c = 0, index=0; c < N; c++, index += 2) {
+					m[r][c] = s.charAt(index); // '0' : 빈 셀, '1' : core
+					if(m[r][c] == '1') { //core면
+						if(r==0 || c==0 || r == N-1 || c == N-1) {
+							outLineCoreCnt++;
+						} else {
+							coreList.add(new Point(r,c));
 						}
 					}
 				}
 			}
+			totalCoreCnt = coreList.size() + outLineCoreCnt; //총 코어의 수
+			maxCoreCnt = 0; // 작업해서 전원연결된 코어의 수
+			minWireSum = Integer.MAX_VALUE; //코어가 최대일 때 최소 와이어 수
+			dfs(0,outLineCoreCnt, 0, 0);
 
-			startConnect(0,0,0);
-
-			sb.append("#").append(t).append(" ").append(minWire).append("\n");
+			sb.append("#").append(t).append(" ").append(minWireSum).append("\n");
 		}
 		System.out.print(sb);
-	} //end main
+	} // end main
 
-	private static void startConnect(int idx, int coreCnt, int wireCnt) {
+	/** index : Core순번, coreCnt : 현재까지 전원이 연결된 core개수,
+	 * wireSum : 전선길이의 합, noCore : 연결안하겠다고 선언한 코어의 개수 
+	 */
+	private static void dfs(int index, int coreCnt, int wireSum, int noCore) {
+		//가지치기
+		if(maxCoreCnt > totalCoreCnt - noCore) { //최댓값이 업데이트되지 않을 경우
+			return;
+		}
 		
 		//기저조건
-		if(idx == coreArrCnt) { //코어들 다 봤니?
-			if(maxCoreCnt < coreCnt) { //최대한 많은 코어를 연결해야 해
-				maxCoreCnt = coreCnt; //최댓값 갱신해~
-				minWire = wireCnt; //사용한 와이어갯수!
-			} else if(maxCoreCnt == coreCnt) { //많약 연결한 코어 수가 같다면
-				minWire = Math.min(minWire, wireCnt); //더 적게 사용한 전선갯수값 넣기.
+		if(index == coreList.size()) { //끝 코어까지 다 생각했으면 끝.
+			if(maxCoreCnt < coreCnt) { //최대 개수이면
+				maxCoreCnt = coreCnt;
+				minWireSum = wireSum;
+			} else if(maxCoreCnt == coreCnt && minWireSum > wireSum) { //저 적은 전선을 쓸 수 있다면
+				minWireSum = wireSum; //갱신하자
 			}
 			return;
 		}
 		
-		int r = coreArr[idx][0];
-		int c = coreArr[idx][1];
-		
-		//상하좌우 탐색해
-		for (int d = 0; d < delta.length; d++) {
-			int tempCnt = 0;
-			int dr = r;
-			int dc = c;
-		
-			//일단 계속 이동
-			while(true) {
-				//전진하라
-				dr += delta[d][0];
-				dc += delta[d][1];
-
-				//가장자리까지 전선을 닿게 하였는가?
-				if(dr < 0 || dc < 0 || dr >= N || dc >= N) {
-					break;
-				}
-				
-				//앞으로 나아갈 수 있는가 없는가!
-				if(processor[dr][dc]) { //이미 다른 코어나 전선이 있는 칸이라면
-					tempCnt = 0; //0부터 다시 세
-					break;
-				}
-				
-				//전진하면서 cnt세기
-				tempCnt++;
+		// 각 코어를 상하좌우로 연결가능하면(위쪽 끝까지 빈칸이어야함),
+		// 연결해보기 (맵에 표시남기기, 나중에는 표시 제거하기)
+		// 연결 안 하는 것도 고려하자
+		Point core = coreList.get(index);
+		dfs(index+1, coreCnt, wireSum, noCore+1); // 연결을 안 하는 경우
+		for (int dir = 0; dir < dr.length; dir++) {
+			if(check(core.r, core.c, dir)) { //연결이 가능하니?
+				int cntWire = fill(core.r, core.c, dir, '2');//해당 방향으로 전선깔기
+				dfs(index+1, coreCnt+1, wireSum + cntWire, noCore); //위쪽연결후
+				fill(core.r, core.c, dir, '0');//해당방향으로 전선깔은 것을 원복하기
 			}
-			
-			//코어 연결 및 전진을 완료했으니 그 자리를 true로 채워주기
-			int toTrueR = r;
-			int toTrueC = c;
-			
-			for (int i = 0; i < tempCnt; i++) {
-				toTrueR += delta[d][0];
-				toTrueC += delta[d][1];
-				processor[toTrueR][toTrueC] = true;
-			}
-			
-//			System.out.println("\n프로세서 체크 idx : " + idx + ", coreCnt : " + coreCnt + ", wireCnt : " + wireCnt + ", tempCnt : " + tempCnt + ", r : " + r + ", c : " + c + ", d : " + d);
-//			coreCheck();
-			
-			//만약 tempCnt가 0이라면 == 전선을 연결할 수 없었다면
-			if(tempCnt == 0) {
-				//다음 코어를 보자.
-				startConnect(idx+1, coreCnt, wireCnt);
-			} else { //전선을 연결했다면
-				//다음 코어를 보되, 연결한 코어갯수+1, 사용한 전선의 갯수+tempCnt
-				startConnect(idx+1, coreCnt+1, wireCnt+tempCnt);
-				
-				//원상복구
-				toTrueR = r;
-				toTrueC = c;
-				for (int i = 0; i < tempCnt; i++) {
-					toTrueR += delta[d][0];
-					toTrueC += delta[d][1];
-					processor[toTrueR][toTrueC] = false;
-				}
-			}
-		}// 상하좌우 보는 중. 끝.
-	} // end startConnect
-
-	//디버깅용. 현재 프로세서 확인하기.
-	private static void coreCheck() {
-		for (int r = 0; r < N; r++) {
-			for (int c = 0; c < N; c++) {
-				System.out.print(String.format("%-6b", processor[r][c]));
-			}
-			System.out.println();
 		}
 	}
-}
+
+	/**core위치에서 외곽으로 직선연결/해제, 해당맵에 작성, 사용한 전선의 길이 리턴
+	 */
+	private static int fill(int r, int c, int dir, char val) {
+		int cntWire = 0; //사용된 전선의 길이
+		for (int i = 1; true ; i++) {
+			int nr = r + dr[dir] * i;
+			int nc = c + dc[dir] * i;
+			if(0 > nr || 0> nc || nr >= N || nc >= N) { //외곽에 도착했니?
+				return cntWire;
+			}
+			m[nr][nc] = val;
+			cntWire++;
+		}
+	} //end fill
+
+	/** core위치에서 외곽으로 직선연결이 가능한지 체크
+	 * (r,c) : 코어좌표
+	 * dir : 방향, 상하좌우 순서, 0,1,2,3순서
+	 */
+	private static boolean check(int r, int c, int dir) {
+		for (int i = 1; true; i++) {
+			int nr = r + dr[dir] * i;
+			int nc = c + dc[dir] * i;
+			if(0> nr || 0> nc || nr >= N || nc >= N) { //외곽에 도착했나?
+				return true;
+			}
+			if(m[nr][nc] != '0') { // 외곽에 가기 전에, 빈칸이 아닌 칸을 만나면?
+				return false;
+			}
+		}
+	} //end check
+	
+	
+}//end class
