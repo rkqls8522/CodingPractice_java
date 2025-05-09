@@ -12,7 +12,7 @@ public class Main {
     static int N, M;
     static int[][] box;
     static int tomatoCnt, ripeTomatoCnt, days;
-    static Queue<Integer> q;
+    static Queue<int[]> q;
 
     public static void main(String[] args) throws IOException {
 
@@ -32,7 +32,8 @@ public class Main {
         //변수 설정
         int[] dr_arr = { -1, 0, 1, 0 }; //상, 우, 하, 좌
         int[] dc_arr = { 0, 1, 0, -1 }; //상, 우, 하, 좌
-        int row, col, dr, dc, num, size;
+        int row, col, dr, dc, size;
+        int[] num;
 
         //queue에서 하나씩 전부 꺼내며 주변의 0위치(익지 않은 토마토 위치)를 q에 추가.
         //주변에 익지 않은 토마토가 하나도 없을 때까지 반복(큐에 값이 없어질 때까지)
@@ -44,8 +45,8 @@ public class Main {
 
                 //변수 셋팅
                 num = q.poll();
-                row = num / M;
-                col = num % M;
+                row = num[0];
+                col = num[1];
 //                System.out.println("row = " + row + ", col = " + col);
 
                 //해당 위치에서 주변 상, 우, 하, 좌 위치 토마토 확인
@@ -57,7 +58,7 @@ public class Main {
                     if(check(dr, dc) && box[dr][dc] == 0){
                         box[dr][dc] = 1; //토마토를 익히고
                         ripeTomatoCnt++; //익은 토마토 갯수 추가
-                        q.add(dr*M + dc); //q에 추가
+                        q.add(new int[]{dr, dc}); //q에 추가
                     }
                 }
             }
@@ -104,7 +105,7 @@ public class Main {
                 if(box[i][j] != -1) tomatoCnt++; //빈 칸이 아니라면 토마토갯수 증가.
                 if(box[i][j] == 1) {
                     ripeTomatoCnt++; //익은 토마토라면 익은 토마토갯수 증가.
-                    q.add(M*i+j); // queue에도 추가. 배열 말고 숫자로만 넣자
+                    q.add(new int[]{i, j}); // queue에도 추가. 배열 말고 숫자로만 넣자
                 }
             }
         }
