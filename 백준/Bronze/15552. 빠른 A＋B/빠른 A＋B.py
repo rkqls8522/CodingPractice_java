@@ -3,11 +3,11 @@
 import sys
 
 input = sys.stdin.readline
+write = sys.stdout.write  # 보통 많은 출력값을 join과 함께 사용할 때 좋다.
+out = []
 
-write = sys.stdout.write
-
-t = int(input())
-
-for _ in range(t):
+for _ in range(int(input())):
     a, b = map(int, input().split())
-    write(str(a + b) + "\n")
+    out.append(str(a + b))
+
+write("\n".join(out))
